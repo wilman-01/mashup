@@ -1,0 +1,27 @@
+{
+	"ImportPath": "github.tamu.edu/rmyoung/mashup",
+	"GoVersion": "go1.13",
+	"GodepVersion": "v80",
+	"Deps": [
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Comment": "v1.7.3-11-gf395758",
+			"Rev": "f395758b854c4efa789b8c1e9b73479704c548cb"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "v1.2.0-14-gf91d341",
+			"Rev": "f91d3411e481ed313eeab65ebfe9076466c39d01"
+		},
+		{
+			"ImportPath": "github.com/lib/pq/oid",
+			"Comment": "v1.2.0-14-gf91d341",
+			"Rev": "f91d3411e481ed313eeab65ebfe9076466c39d01"
+		},
+		{
+			"ImportPath": "github.com/lib/pq/scram",
+			"Comment": "v1.2.0-14-gf91d341",
+			"Rev": "f91d3411e481ed313eeab65ebfe9076466c39d01"
+		}
+	]
+}

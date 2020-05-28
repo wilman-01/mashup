@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-colors-2019.css">
+
+<head>
+<style>
+    input[type=text], select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[type=submit] {
+        width: 100%;
+        background-color: #000000;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    input[type=submit]:hover {
+        background-color: #8B0000;
+    }
+    
+    .content {
+        position: fixed;
+        top: 70%;
+        left: 50.5%;
+        transform: translate(-50%, -50%);
+    }
+
+    .button {
+        background-color: #0073aa;
+        border: none;
+        color: white;
+        width: 290px;
+        padding: 10px 17px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 20px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+
+    @media (max-width: 375px) {
+        .button {
+            background-color: #0073aa;
+            border: none;
+            color: white;
+            width: 80%;
+            padding: 10px 17px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 20px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+    }
+
+    .header {
+        position: fixed;
+        padding: 10px 15px;
+    }
+
+    .speech-bubble {
+        position: relative;
+        background: #0073aa;
+        margin: 0 auto;
+        color: white;
+        padding: 0px 10px;
+    }
+
+    .speech-bubble:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 3.1%;
+        width: 0;
+        height: 0;
+        border: 17px solid transparent;
+        border-bottom-color: #0073aa;
+        border-top: 0;
+        margin-left: -17px;
+        margin-top: -17px;
+    }
+
+    .description {
+        width: 600px;
+        margin-left: 352px;
+        margin-top: 30px;
+    }
+
+</style>
+</head>
+
+<title>Create and Find Travel Itineraries</title>
+
+<body>
+
+    <header id>
+        <h1 class="speech-bubble"> Welcome! </h1>
+    </header>
+
+    <br>
+    <br>
+
+    <div class="w3-content w3-center">
+        <h1> Sight The City </h1>
+    </div>
+
+    <div class="w3-content w3-center" style="padding: 20px 0px; width: 60%">
+        <p>
+            Sight The City is the new app that will allow locals to create itineraries featuring their
+            favorite hot spots in the city for all to see and visit by themselves. Tourists and avid locals
+            will be able to access this awesome selection of businesses and activities to make the most out of their day.
+        </p>
+    </div>
+
+    <div class="w3-content w3-center" style="padding: 20px 0px">
+        <div>
+            <a href="getItinerary.html" class="button w3-hover-gray">Find an Itinerary</a>
+        </div>
+        
+        <div>
+            <a href="createItinerary.html" class="button w3-hover-gray">Create an Itinerary</a>
+        </div>
+    </div>
+
+</body>
+</html>

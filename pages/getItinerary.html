@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-colors-2019.css">
+
+<head>
+<style>
+    input[type=text], select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[type=date], select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[type=submit] {
+        width: 100%;
+        background-color: #0073aa;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #000000;
+    }
+
+    li {
+        float: left;
+    }
+
+    li a {
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+    }
+
+    /* Change the link color to #111 (black) on hover */
+    li a:hover {
+        background-color: #8B0000;
+    }
+
+    .autocomplete {
+        position: relative;
+        display: inline-block;
+    }
+
+    .autocomplete-items {
+        position: absolute;
+        border: 1px solid #d4d4d4;
+        border-bottom: none;
+        border-top: none;
+        z-index: 99;
+        /*position the autocomplete items to be the same width as the container:*/
+        top: 100%;
+        left: 0;
+        right: 0;
+    }
+
+    .autocomplete-items div {
+        padding: 10px;
+        cursor: pointer;
+        background-color: #fff; 
+        border-bottom: 1px solid #d4d4d4; 
+    }
+
+    /*when hovering an item:*/
+    .autocomplete-items div:hover {
+        background-color: #0073aa;
+        color: White;
+    }
+
+    /*when navigating through the items using the arrow keys:*/
+    .autocomplete-active {
+        background-color: #0073aa;
+        color: White;
+    }
+
+    .speech-bubble {
+        position: relative;
+        background: #0073aa;
+        margin: 0 auto;
+        color: white;
+        padding: 0px 10px;
+    }
+
+    .w3-theme {
+        color: #fff !important;
+        background-color: #0073aa !important
+    }
+
+</style>
+</head>
+
+<title>Find Itineraries</title>
+
+<body>
+
+    <ul>
+        <li><a class="w3-hover-gray" href="Index.html">Home</a></li>
+        <li><a class="w3-hover-gray" href="createItinerary.html">Create Itinerary</a></li>
+        <li><a class="w3-hover-gray" href="getItinerary.html">Find Itineraries</a></li>
+    </ul>
+
+    <header id>
+        <h1 class="speech-bubble"> Find an Itinerary </h1>
+    </header>
+
+    <h2 class="w3-content w3-center" id="itinerarylocationtitle"></h2>
+
+    <div class="w3-content w3-center" style="width: 100%; padding: 25px 0px 0px 0px" id="maindiv">
+        <form autocomplete="off" method="post" id="locationform" class="w3-content w3-center" style="width: 90%">
+            <div class="autocomplete" id="autocompletecities" style="text-align: left; float: left; width: 100%;"></div>
+        </form>
+
+        <div class="w3-center" id="itineraryresults" style="width: 90%">
+            <span id="weatherspan" style="width: 100%">
+                <h3 id="weatherHeader"></h3>
+                <p id="weatherHere"></p>
+            </span>
+            <br>
+            <span id="itineraryspan" style="width: 100%">
+                <h3 id="itinerariesHeader"></h3>
+                <p id="itinerariesHere"></p>
+            </span>
+        </div>
+
+        <form class='w3-content w3-center' autocomplete='off' action='/changetagsitinerary/' method='post' id='changetagsform'></form>
+        <form class="w3-content w3-center" autocomplete="off" action="/newitinerary/" method="post" id="newlocationform"></form>
+    </div>
+
+    <script>
+        var index = 1
+        var itineraries = []
+        var cities = []
+        var tags = []
+
+        function next() {
+            if (index == itineraries.length-1) {
+                index = 1;
+            }
+            else {
+                index++;
+            }
+
+            var length = itineraries.length-1;
+
+            document.getElementById("itinerariesHeader").innerHTML = "<b> Itinerary " + index + " of " + length + " </b>";
+            document.getElementById("itinerariesHere").innerHTML = itineraries[index];
+        }
+
+        function previous() {
+            if (index == 1) {
+                index = itineraries.length-1;
+            }
+            else {
+                index--;
+            }
+
+            var length = itineraries.length-1;
+
+            document.getElementById("itinerariesHeader").innerHTML = "<b> Itinerary " + index + " of " + length + " </b>";
+            document.getElementById("itinerariesHere").innerHTML = itineraries[index];
+        }
+
+        // autocomplete function source: https://www.w3schools.com/howto/howto_js_autocomplete.asp
+        function autocomplete(inp, arr) {
+            /*the autocomplete function takes two arguments,
+            the text field element and an array of possible autocompleted values:*/
+            var currentFocus;
+            /*execute a function when someone writes in the text field:*/
+            inp.addEventListener("input", function(e) {
+                var a, b, i, val = this.value;
+                /*close any already open lists of autocompleted values*/
+                closeAllLists();
+                if (!val) { return false;}
+                currentFocus = -1;
+                /*create a DIV element that will contain the items (values):*/
+                a = document.createElement("div");
+                a.setAttribute("id", this.id + "autocomplete-list");
+                a.setAttribute("class", "autocomplete-items");
+                /*append the DIV element as a child of the autocomplete container:*/
+                this.parentNode.appendChild(a);
+                /*for each item in the array...*/
+                for (i = 0; i < arr.length; i++) {
+                    /*check if the item starts with the same letters as the text field value:*/
+                    if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                        /*create a DIV element for each matching element:*/
+                        b = document.createElement("div");
+                        /*make the matching letters bold:*/
+                        b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                        b.innerHTML += arr[i].substr(val.length);
+                        /*insert a input field that will hold the current array item's value:*/
+                        b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                        /*execute a function when someone clicks on the item value (DIV element):*/
+                        b.addEventListener("click", function(e) {
+                            /*insert the value for the autocomplete text field:*/
+                            inp.value = this.getElementsByTagName("input")[0].value;
+                            /*close the list of autocompleted values,
+                            (or any other open lists of autocompleted values:*/
+                            closeAllLists();
+                        });
+                        a.appendChild(b);
+                    }
+                }
+            });
+            /*execute a function presses a key on the keyboard:*/
+            inp.addEventListener("keydown", function(e) {
+                var x = document.getElementById(this.id + "autocomplete-list");
+                if (x) x = x.getElementsByTagName("div");
+                if (e.keyCode == 40) {
+                    /*If the arrow DOWN key is pressed,
+                    increase the currentFocus variable:*/
+                    currentFocus++;
+                    /*and and make the current item more visible:*/
+                    addActive(x);
+                } else if (e.keyCode == 38) { //up
+                    /*If the arrow UP key is pressed,
+                    decrease the currentFocus variable:*/
+                    currentFocus--;
+                    /*and and make the current item more visible:*/
+                    addActive(x);
+                } else if (e.keyCode == 13) {
+                    /*If the ENTER key is pressed, prevent the form from being submitted,*/
+                    e.preventDefault();
+                    if (currentFocus > -1) {
+                    /*and simulate a click on the "active" item:*/
+                        if (x) x[currentFocus].click();
+                    }
+                }
+            });
+            function addActive(x) {
+                /*a function to classify an item as "active":*/
+                if (!x) return false;
+                /*start by removing the "active" class on all items:*/
+                removeActive(x);
+                if (currentFocus >= x.length) currentFocus = 0;
+                if (currentFocus < 0) currentFocus = (x.length - 1);
+                /*add class "autocomplete-active":*/
+                x[currentFocus].classList.add("autocomplete-active");
+            }
+            function removeActive(x) {
+                /*a function to remove the "active" class from all autocomplete items:*/
+                for (var i = 0; i < x.length; i++) {
+                    x[i].classList.remove("autocomplete-active");
+                }
+            }
+            function closeAllLists(elmnt) {
+                /*close all autocomplete lists in the document,
+                except the one passed as an argument:*/
+                var x = document.getElementsByClassName("autocomplete-items");
+                for (var i = 0; i < x.length; i++) {
+                    if (elmnt != x[i] && elmnt != inp) {
+                        x[i].parentNode.removeChild(x[i]);
+                    }
+                }
+            }
+            /*execute a function when someone clicks in the document:*/
+            document.addEventListener("click", function (e) {
+                closeAllLists(e.target);
+            });
+        }
+
+        fetch("/itinerarycities/")
+            .then(response => response.json())
+            .then(citiesList => {
+                citiesList.forEach(city => {
+                    cities.push(city)
+                })
+            })
+
+        locationdiv = document.getElementById("autocompletecities")
+        locationform = document.getElementById("locationform")
+
+        fetch("/itinerarylocation/")
+            .then(response => response.json())
+            .then(location => {
+                if (location == "incorrect format") {
+                    alert("Please enter a city's name")
+                    locationform.action = "/itinerarygetnulllocation/"
+                    locationform.submit()
+                }
+                else if (location == "no itineraries") {
+                    alert("No itineraries currently available for your entered destination")
+                    locationform.action = "/itinerarygetnulllocation/"
+                    locationform.submit()
+                }
+                else if (location == "") {
+                    locationlabel = document.createElement("label")
+                    locationlabel.innerHTML = "<b> Destination City </b>"
+
+                    locationdiv.appendChild(locationlabel)
+                    locationdiv.innerHTML += "<input id='itinerarydestination' type='text' name='itinerarydestination'>"
+
+                    submitLocationButton = document.createElement("input")
+                    submitLocationButton.type = "submit"
+                    submitLocationButton.value = "Submit"
+                    submitLocationButton.className = "w3-hover-gray"
+                    submitLocationButton.style = "white-space: normal"
+
+                    locationform.appendChild(submitLocationButton)
+                    locationform.action = "/itinerarylocation/"
+                    autocomplete(document.getElementById("itinerarydestination"), cities)
+                }
+                else {
+                    document.getElementById("itinerarylocationtitle").innerHTML = "Itineraries for " + location
+                    document.getElementById("itinerarylocationtitle").style = 'padding: 15px 0px 0px; margin: 0% 10% 0% 10%'
+
+                    newitinerarybutton = document.createElement("input")
+                    newitinerarybutton.type = "submit"
+                    newitinerarybutton.value = "Find Itineraries for Another City"
+                    newitinerarybutton.className = "w3-hover-gray"
+                    document.getElementById("newlocationform").appendChild(newitinerarybutton)
+
+                    fetch("/itineraryspecs/")
+                    .then(response => response.json())
+                    .then(itinerarylist => {
+                        if (itinerarylist) {
+                            itinerarylist.forEach(itinerary => {
+                                itineraries.push(itinerary)
+                            })
+
+                            var length = itineraries.length-1;
+
+                            document.getElementById("itineraryresults").className = "w3-container-4 w3-content w3-center"
+
+
+                            document.getElementById("weatherHeader").innerHTML = "<b> Weather Forecast </b>"
+                            document.getElementById("weatherHere").innerHTML = itineraries[0]
+
+                            if (itineraries[index].substring(0,14) != "No Itineraries") {
+                                document.getElementById("itinerariesHeader").innerHTML = "<b> Itinerary " + index + " of " + length + " </b>"
+                                document.getElementById("itinerariesHere").innerHTML = itineraries[index]
+                                document.getElementById("itinerariesHere").style = 'padding: 0px 0px 20px'
+
+                                document.getElementById("itineraryspan").innerHTML += "<button onClick='previous()' id='previousButton' class='w3-button w3-theme w3-hover-grey'>Previous</button>"
+                                document.getElementById("itineraryspan").innerHTML += "<button onClick='next()' id='nextButton' class='w3-button w3-theme w3-hover-grey'>Next</button>"
+                            }
+                            else {
+                                document.getElementById("itinerariesHere").innerHTML = "<h3><b>" + itineraries[index] + "</b></h3>"
+                            }
+
+                            changetagitinerarybutton = document.createElement("input")
+                            changetagitinerarybutton.type = "submit"
+                            changetagitinerarybutton.value = "Change Itinerary Tags"
+                            changetagitinerarybutton.className = "w3-hover-gray"
+                            changetagitinerarybutton.style = "white-space: normal; width: 71.5%;"
+                            document.getElementById("changetagsform").appendChild(changetagitinerarybutton)
+                            document.getElementById("changetagsform").style = 'padding: 40px 0px 10px'
+
+                            newitinerarybutton.style = 'white-space: normal; width: 71.5%;'
+                            document.getElementById("newlocationform").style = 'padding: 10px 0px 35px'
+                        }
+                        else {
+                            fetch("/itinerarytags/")
+                            .then(response => response.json())
+                            .then(tagsList => {
+                                tagsList.forEach(tag => {
+                                    tags.push(tag)
+                                })
+                            })
+
+                            itinerarydatelabel = document.createElement("label")
+                            itinerarydatelabel.innerHTML = "<b> Date of Visit </b> <br>"
+
+                            // date info
+                            locationdiv.appendChild(itinerarydatelabel)
+                            locationdiv.innerHTML += "<input class='w3-input' type='date' name='date'><br><br>"
+
+                            // tags info
+                            itinerarytagslabel = document.createElement("label")
+                            itinerarytagslabel.innerHTML = "<b> What are you looking for? </b> <br> Leave blank to receive all itineraries"
+
+                            locationdiv.appendChild(itinerarytagslabel)
+
+                            // Wilman's tag box here
+
+                            locationdiv.innerHTML += "<input id='tags' type='text' name='tags'>"
+
+                            submitItineraryButton = document.createElement("input")
+                            submitItineraryButton.type = "submit"
+                            submitItineraryButton.value = "Find Itineraries"
+                            submitItineraryButton.className = "w3-hover-gray"
+                            submitItineraryButton.style = "white-space: normal"
+                            locationform.appendChild(submitItineraryButton)
+
+                            locationform.action = "/itineraryspecs/"
+                            autocomplete(document.getElementById("tags"), tags)
+
+                            newitinerarybutton.style = 'white-space: normal; width: 90%;'
+                            document.getElementById("newlocationform").style = 'padding: 0px 0px 35px'
+                        }
+                    })
+                }
+            })
+
+    </script>
+
+</body>
+</html>

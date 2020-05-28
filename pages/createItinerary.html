@@ -1,0 +1,350 @@
+﻿<!DOCTYPE html>
+<html>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-colors-2019.css">
+
+<head>
+<style>
+    input[type=text], select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[type=submit] {
+        width: 100%;
+        background-color: #0073aa;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #000000;
+    }
+
+    li {
+        float: left;
+    }
+
+    li a {
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+    }
+
+    /* Change the link color to #111 (black) on hover */
+    li a:hover {
+        background-color: #8B0000;
+    }
+
+    .speech-bubble {
+        position: relative;
+        background: #0073aa;
+        margin: 0 auto;
+        color: white;
+        padding: 0px 10px;
+    }
+
+</style>
+</head>
+
+<title>Create Itinerary</title>
+
+<body>
+
+    <ul>
+        <li><a class="w3-hover-gray" href="Index.html">Home</a></li>
+        <li><a class="w3-hover-gray" href="createItinerary.html">Create Itinerary</a></li>
+        <li><a class="w3-hover-gray" href="getItinerary.html">Find Itineraries</a></li>
+    </ul>
+
+    <header>
+        <h1 class="speech-bubble"> Create an Itinerary </h1>
+    </header>
+
+    <h2 class="w3-content w3-center" id="itinerarylocationtitle"></h2>
+
+    <div class="w3-content" style="padding: 30px 0px">
+        <form autocomplete="on" action="/location/" method="post" style="margin: 0% 10% 0% 10%" id="locationform"></form>
+
+        <form autocomplete="on" action="/itineraryoptions/" method="post" style="margin: 0% 10% 0% 10%" id="itineraryform"></form>
+
+        <div id="results"></div>
+
+        <div id="itinerary" style="text-align: left; float: left; margin: 0% 10% 0% 10%">
+            <h3 id="itineraryHeader" class="w3-content w3-center"></h3>
+        </div>
+
+        <form class="w3-content w3-center" autocomplete="off" action="/deleteitinerary/" method="post" id="deleteitineraryform" style="margin: 0% 10% 0% 10%"></form>
+    </div>
+
+    <script>
+        var itineraryitems = []
+
+        function checkItinerary() {
+            var singleItemChecked = false;
+            for (i = 0; i < itineraryitems.length; i++) {
+                var itineraryitem = itineraryitems[i]
+                var checkValue = document.getElementById(itineraryitem).checked;
+                if (checkValue) {
+                    singleItemChecked = true;
+                    break;
+                }
+            }
+            if (!singleItemChecked) {
+                alert("Please check the checkbox next to each item in your Itinerary that you would like to submit");
+                return false;
+            }
+
+            tags = document.getElementById("tags").value;
+            tags = tags.toUpperCase();
+            for (i = 0; i < tags.length; i++) {
+                if (tags[i] != ' ' && !(tags[i] >= "A" && tags[i] <= "Z")) {
+                    alert("Tags must contain only letters. Each tag must be separated by only a space.")
+                    return false
+                }
+            }
+            alert("Your itinerary was submitted successfully!");
+            return true;
+        }
+
+        function stateAndCountry() {
+            itinerarylocation = document.getElementById("destination").value;
+            var numCommas = 0;
+            for (i = 0; i < itinerarylocation.length; i++) {
+                if (itinerarylocation[i] == ',') {
+                    numCommas++;
+                }
+            }
+            if (numCommas == 2) {
+                return true;
+            }
+            else {
+                alert("Please enter your City as City, State/Providence Abbreviation, Country Abbreviation\n\nExample: New York, NY, USA")
+                return false;
+            }
+        }
+
+        locationform = document.getElementById("locationform")
+        fetch("/location/")
+            .then(response => response.json())
+            .then(location => {
+                itinerarylocation = location
+
+                if (location == "incorrect format") {
+                    alert("Please enter a city's name")
+                    locationform.action = "/itinerarycreatenulllocation/"
+                    locationform.submit()
+                }
+                else if (location == "") {
+                    locationspan = document.createElement("span")
+
+                    locationlabel = document.createElement("label")
+                    locationlabel.innerHTML = "<b> City </b>"
+
+                    locationinput = document.createElement("input")
+                    locationinput.type = "text"
+                    locationinput.name = "destination"
+                    locationinput.id = "destination"
+
+                    locationform.appendChild(locationspan)
+                    locationspan.appendChild(locationlabel)
+                    locationspan.appendChild(locationinput)
+
+                    locationspan.innerHTML += "<input type='submit' value='Submit' class='w3-hover-gray' style='white-space: normal' onClick='return stateAndCountry()'>"
+                }
+                else {
+                    document.getElementById("itinerarylocationtitle").innerHTML = "Create Itinerary for " + location
+                    document.getElementById("itinerarylocationtitle").style = 'padding: 15px 0px 0px; margin: 0% 10% 0% 10%'
+
+                    itineraryform = document.getElementById("itineraryform")
+
+                    itineraryspan = document.createElement("span")
+
+                    /*
+                    itinerarylocationlabel = document.createElement("label")
+                    itinerarylocationlabel.innerHTML = "<b> Enter an Exact Address or General Location </b>"
+
+                    itinerarylocationinput = document.createElement("input")
+                    itinerarylocationinput.type = "text"
+                    itinerarylocationinput.name = "location"
+                    */
+
+                    itinerarysearchlabel = document.createElement("label")
+                    itinerarysearchlabel.innerHTML = "<b> What are you looking for? </b> <br> You can enter anything from a business's name or a general type of activity <br> Example: Starbucks or Coffee Shops"
+
+                    itinerarysearchinput = document.createElement("input")
+                    itinerarysearchinput.type = "text"
+                    itinerarysearchinput.name = "search"
+
+                    submitItineraryButton = document.createElement("input")
+                    submitItineraryButton.type = "submit"
+                    submitItineraryButton.value = "Search"
+                    submitItineraryButton.className = "w3-hover-gray"
+                    submitItineraryButton.style = "white-space: normal"
+
+                    itineraryform.appendChild(itineraryspan)
+                    //itineraryspan.appendChild(itinerarylocationlabel)
+                    //itineraryspan.appendChild(itinerarylocationinput)
+                    itineraryspan.appendChild(itinerarysearchlabel)
+                    itineraryspan.appendChild(itinerarysearchinput)
+                    itineraryspan.appendChild(submitItineraryButton)
+
+                    fetch("/itineraryoptions/")
+                        .then(response => response.json())
+                        .then(itineraryPlannerList => {
+                            if (itineraryPlannerList[0].name != "nil") {
+                                div = document.getElementById("results")
+                                div.style = 'margin: 0% 10% 0% 10%; padding: 40px 0px 0px'
+
+                                form = document.createElement("form")
+                                form.action = "/itinerary/"
+                                form.method = "post"
+                                form.style = "formcontent"
+
+                                label = document.createElement("label")
+                                label.innerHTML = "<b> Results </b>"
+                                form.appendChild(label)
+
+                                select = document.createElement("select")
+                                select.name = "userChoice"
+                                form.appendChild(select)
+
+                                notesLabel = document.createElement("label")
+                                notesLabel.innerHTML = "<b> Notes </b>"
+                                form.appendChild(notesLabel)
+
+                                input = document.createElement("input")
+                                input.type = "text"
+                                input.name = "userNotes"
+                                form.appendChild(input)
+
+                                div.appendChild(form)
+
+                                itineraryPlannerList.forEach(business => {
+                                    if (!business.is_close) {
+                                        option = document.createElement("option")
+                                        option.innerHTML = business.name + ", "
+
+                                        if (business.price != "") {
+                                            option.innerHTML += "Price: " + business.price + ", "
+                                        }
+
+                                        if (business.rating != "") {
+                                            option.innerHTML += "Rating: " + business.rating + ", "
+                                        }
+
+                                        option.innerHTML += "Address: " + business.location.display_address
+
+                                        select.appendChild(option)
+                                    }
+                                })
+
+                                submitButton = document.createElement("input")
+                                submitButton.type = "submit"
+                                submitButton.value = "Add to Itinerary"
+                                submitButton.className = "w3-hover-gray"
+                                submitButton.style = "white-space: normal"
+                                form.appendChild(submitButton)
+                            }
+                            else {
+                                alert("No results found")
+                                itineraryform.action = "/itinerarymatchesnull/"
+                                itineraryform.submit()
+                            }
+                        })
+
+                    div1 = document.getElementById("itinerary")
+
+                    fetch("/itinerary/")
+                        .then(response => response.json())
+                        .then(itineraryList => {
+                            if (itineraryList) {
+                                form1 = document.createElement("form")
+                                form1.action = "/finalitinerary/"
+                                form1.method = "post"
+                                form1.id = "submititineraryform"
+                                form1.style = "margin: 0% 10% 0% 10%"
+
+                                div1.style = 'padding: 40px 0px 0px'
+
+                                document.getElementById("itineraryHeader").innerHTML = "<b> Itinerary </b>"
+                                label1 = document.createElement("label")
+                                label1.innerHTML = "<b> Finalize Submissions: </b> <br>"
+                                form1.appendChild(label1)
+                                div1.appendChild(form1)
+
+                                br = document.createElement("br")
+                                form1.appendChild(br)
+
+                                var i = 0
+                                itineraryList.forEach(business => {
+                                    var userItineraryItem = "userItinerary" + i.toString()
+                                    for (j = 0; j < business.length; j++) {
+                                        if (business[j] == '\'') {
+                                            business = business.substring(0,j) + "&#39" + business.substring(j+1)
+                                        }
+                                        else if (business[j] == '"') {
+                                            business = business.substring(0,j) + "&#34" + business.substring(j+1)
+                                        }
+                                    }
+                                    form1.innerHTML += "<input type='checkbox' value='" + business + "' name='userItinerary' id='" + userItineraryItem + "' checked>"
+
+                                    span = document.createElement("span")
+                                    span.innerHTML = " " + business
+                                    form1.appendChild(span)
+
+                                    br1 = document.createElement("br")
+                                    form1.appendChild(br1)
+
+                                    itineraryitems.push(userItineraryItem)
+                                    i += 1
+                                })
+
+                                br2 = document.createElement("br")
+                                form1.appendChild(br2)
+
+                                span1 = document.createElement("span")
+                                form1.appendChild(span1)
+
+                                tagslabel = document.createElement("label")
+                                tagslabel.innerHTML = "<b> Add Tags </b> <br> Example: coffee sports restaurants"
+                                span1.appendChild(tagslabel)
+
+                                tagsinput = document.createElement("input")
+                                tagsinput.type = "text"
+                                tagsinput.name = "tags"
+                                tagsinput.id = "tags"
+                                span1.appendChild(tagsinput)
+
+                                form1.innerHTML += "<input type='submit' value='Submit Itinerary' class='w3-hover-gray' style='white-space: normal' onClick='return checkItinerary()'>"
+                            }
+                        })
+
+                    deleteitinerarybutton = document.createElement("input")
+                    deleteitinerarybutton.type = "submit"
+                    deleteitinerarybutton.value = "Delete Itinerary"
+                    deleteitinerarybutton.className = "w3-hover-gray"
+                    deleteitinerarybutton.style = "white-space: normal"
+                    document.getElementById("deleteitineraryform").appendChild(deleteitinerarybutton)
+                }
+            })
+    </script>
+</body>
+</html>
